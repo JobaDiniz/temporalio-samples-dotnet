@@ -23,6 +23,7 @@ namespace TemporalioSamples.Pausable
         private readonly WorkflowParameteres parameters;
         private readonly WorkflowInterpreterEventing eventing = new();
         private Queue<int>? blocks;
+        private bool isPaused;
 
         [WorkflowInit]
         public PausableWorkflow(WorkflowParameteres parameters) => this.parameters = parameters;
@@ -38,6 +39,7 @@ namespace TemporalioSamples.Pausable
                 RetryPolicy = new Temporalio.Common.RetryPolicy { MaximumAttempts = 3 },
             };
 
+            //await Workflow.ExecuteActivityAsync((Activities activity) => activity.ExecutionStartedAsync(parameters.WorkflowId, DateTime.UtcNow), options);
             var definitionResponse = await Workflow.ExecuteActivityAsync((Activities a) => a.GetDefinitionAsync(parameters.WorkflowId), options);
             blocks = new Queue<int>(definitionResponse.Blocks);
 
@@ -51,13 +53,15 @@ namespace TemporalioSamples.Pausable
                 }
             }
 
-            return JsonDocument.Parse("{}").RootElement;
+            var result = JsonDocument.Parse("{}").RootElement;
+            //await Workflow.ExecuteActivityAsync((Activities activity) => activity.ExecutionEndedAsync(parameters.WorkflowId, DateTime.UtcNow, result, null), options);
+            return result;
         }
 
         IWorkflowInterpreterEventing IWorkflowInterpreter.Eventing => eventing;
 
         [WorkflowQuery("paused")]
-        public bool IsPaused { get; private set; }
+        public bool IsPaused => isPaused;
 
         [WorkflowUpdate("resume")]
         public async Task<ResumeResponse> ResumeAsync(JsonElement? payload)
@@ -76,7 +80,7 @@ namespace TemporalioSamples.Pausable
                     throw new ApplicationFailureException($"Failed to resume workflow '{parameters.WorkflowId}' execution '{Workflow.Info.WorkflowId}' because the '{nameof(parameters)}' was not initialized.");
                 }
 
-                IsPaused = false;
+                isPaused = false;
                 await eventing.PublishAsync(new WorkflowResumedEvent(parameters.WorkflowId, payload), Workflow.CancellationToken);
                 return new ResumeResponse("resumed");
             }
@@ -110,7 +114,13 @@ namespace TemporalioSamples.Pausable
             await mutex.WaitOneAsync();
             try
             {
-                IsPaused = true;
+                isPaused = true;
+                var options = new ActivityOptions
+                {
+                    StartToCloseTimeout = TimeSpan.FromSeconds(10),
+                    CancellationToken = Workflow.CancellationToken,
+                };
+                //await Workflow.ExecuteActivityAsync((Activities activity) => activity.ExecutionPausedAsync(workflowId, DateTime.UtcNow, payload), options);
                 await eventing.PublishAsync(new WorkflowPausedEvent(workflowId, payload), Workflow.CancellationToken);
             }
             finally
@@ -122,7 +132,7 @@ namespace TemporalioSamples.Pausable
         private async Task WaitForResumeAsync(CancellationToken cancellation)
         {
             var timeout = TimeSpan.FromDays(15);
-            var succeeded = await Workflow.WaitConditionAsync(() => IsPaused == false, timeout, cancellation);
+            var succeeded = await Workflow.WaitConditionAsync(() => isPaused == false, timeout, cancellation);
             if (!succeeded)
             {
                 throw new ApplicationFailureException($"The workflow was paused and did not receive a continuation within {timeout}.");

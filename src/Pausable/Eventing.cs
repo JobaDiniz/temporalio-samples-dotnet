@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Text.Json;
+using Temporalio.Workflows;
 
 namespace TemporalioSamples.Pausable
 {
@@ -78,7 +79,7 @@ namespace TemporalioSamples.Pausable
                     var pendingSubscriptionCallback = subscription.Callback(@event, cancellationToken);
                     pendingSubscriptionCallbacks.Add(pendingSubscriptionCallback);
                 }
-                await Task.WhenAll(pendingSubscriptionCallbacks).ConfigureAwait(false);
+                await Task.WhenAll(pendingSubscriptionCallbacks);
             }
         }
 

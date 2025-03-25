@@ -66,6 +66,16 @@ async Task ResumeWorkflowAsync()
 #pragma warning restore SA1010 // Opening square brackets should be spaced correctly
 }
 
+async Task QueryMetadataAsync()
+{
+    var workflowId = "1234";
+    var query = "__temporal_workflow_metadata";
+    Console.WriteLine($"Querying '{query}' for workflow with id={workflowId}");
+    var handle = client.GetWorkflowHandle(workflowId);
+    var response = await handle.QueryAsync<Temporalio.Api.Sdk.V1.WorkflowMetadata>(query, []);
+    Console.WriteLine($"Query response: {response}");
+}
+
 switch (args.ElementAtOrDefault(0) ?? "worker")
 {
     case "worker":
@@ -76,6 +86,9 @@ switch (args.ElementAtOrDefault(0) ?? "worker")
         break;
     case "resume":
         await ResumeWorkflowAsync();
+        break;
+    case "query":
+        await QueryMetadataAsync();
         break;
     default:
         throw new ArgumentException("Must pass 'worker' or 'workflow' as the single argument");
