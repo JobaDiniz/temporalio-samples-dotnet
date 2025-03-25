@@ -30,5 +30,7 @@ The workflow will *resume* and then *pause* **again**. Then run:
 
 Immediately after you run *resume* again, click *"back to workflows"* link and then click on the workflow run ID again. Do this quickly.
 
+
 ## Video
 
+https://github.com/user-attachments/assets/07ffca84-02f4-48f2-82a9-5a2047c7f99e
