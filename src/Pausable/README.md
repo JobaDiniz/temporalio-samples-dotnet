@@ -38,7 +38,6 @@ Temporalio.Worker.WorkflowWorker[0]
          at Temporalio.Worker.WorkflowWorker.HandleActivationAsync(IPayloadCodec codec, WorkflowActivation act)
 ```
 
-
 ## Video
 
-https://github.com/user-attachments/assets/07ffca84-02f4-48f2-82a9-5a2047c7f99e
+https://github.com/user-attachments/assets/fd7e7994-b2d3-4316-a168-13f86d01124b
