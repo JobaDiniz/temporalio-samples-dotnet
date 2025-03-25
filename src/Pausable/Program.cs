@@ -28,9 +28,6 @@ async Task RunWorkerAsync()
     var workerOptions = new TemporalWorkerOptions(taskQueue: "pausable-sample")
         .AddAllActivities(new Activities())
         .AddWorkflow<PausableWorkflow>();
-#pragma warning disable SA1010 // Opening square brackets should be spaced correctly
-    workerOptions.Interceptors = [new Interceptor()];
-#pragma warning restore SA1010 // Opening square brackets should be spaced correctly
     using var worker = new TemporalWorker(client, workerOptions);
     try
     {
