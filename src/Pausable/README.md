@@ -36,4 +36,4 @@ Temporalio.Worker.WorkflowWorker[0]
 
 ## Video
 
-https://github.com/user-attachments/assets/f892e05b-a8b4-4cb8-bb3b-389b96b1164d
+https://github.com/user-attachments/assets/363e96a7-3edc-489c-bddf-6315fdda5974
