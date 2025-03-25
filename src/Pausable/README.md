@@ -28,7 +28,7 @@ The workflow will *resume* and then *pause* **again**. Then run:
     
     dotnet run resume
 
-Immediately after you run *resume* again, click *"back to workflows"* link and then click on the workflow run ID again. Do this quickly.
+Immediately after you run *resume* again, click *"back to workflows"* link and then click on the workflow run ID again several times. Do this quickly.
 
 
 ## Video
