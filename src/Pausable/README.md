@@ -8,8 +8,6 @@ Run the temporal server
 
     temporal server start-dev
 
-Open the temporal UI dashboard.
-
 Run the following from this directory in a separate terminal to start the worker:
 
     dotnet run worker
@@ -18,15 +16,13 @@ Then in another terminal, run the workflow from this directory:
     
     dotnet run workflow
 
-The workflow will *pause*. Then in another terminal, run the *query* from this directory:
+The workflow will eventually *"pause"* (`Workflow.WaitConditionAsync(() => isPaused == false, timeout, cancellation)`). *You do not need to wait*. In another terminal, run the *query* from this directory:
 
     dotnet run query
 
-By doing this, sometimes the worker will show the error. If that does not happen, then run the *resume*:
+By doing this, sometimes the worker will show the error. If that does not happen, then run the *query* again:
     
-    dotnet run resume
-
-Immediately after you run *resume*, keep issuing the `dotnet run query` command. This will eventually fail.
+    dotnet run query
 
 ### Error
 

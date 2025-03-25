@@ -76,6 +76,25 @@ async Task QueryMetadataAsync()
     Console.WriteLine($"Query response: {response}");
 }
 
+async Task QueryAndResumeAsync()
+{
+    var workflowId = "1234";
+    var query = "__temporal_workflow_metadata";
+    var payload = JsonDocument.Parse("{}").RootElement;
+    Console.WriteLine($"Querying ('{query}') and Resuming at the same time for workflow with id={workflowId}");
+    var handle = client.GetWorkflowHandle(workflowId);
+
+    var tasks = new List<Task>(2)
+    {
+        handle.QueryAsync<Temporalio.Api.Sdk.V1.WorkflowMetadata>(query, [])
+            .ContinueWith(t => Console.WriteLine($"Query response: {t}")),
+        handle.ExecuteUpdateAsync<JsonElement>("resume", [payload])
+            .ContinueWith(t => Console.WriteLine($"Workflow resumed with response: {t}")),
+    };
+
+    await Task.WhenAll(tasks);
+}
+
 switch (args.ElementAtOrDefault(0) ?? "worker")
 {
     case "worker":
@@ -89,6 +108,9 @@ switch (args.ElementAtOrDefault(0) ?? "worker")
         break;
     case "query":
         await QueryMetadataAsync();
+        break;
+    case "query+resume":
+        await QueryAndResumeAsync();
         break;
     default:
         throw new ArgumentException("Must pass 'worker' or 'workflow' as the single argument");

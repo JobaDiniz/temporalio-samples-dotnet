@@ -22,7 +22,6 @@ namespace TemporalioSamples.Pausable
         private readonly Mutex mutex = new();
         private readonly WorkflowParameteres parameters;
         private readonly WorkflowInterpreterEventing eventing = new();
-        private Queue<int>? blocks;
         private bool isPaused;
 
         [WorkflowInit]
@@ -39,22 +38,11 @@ namespace TemporalioSamples.Pausable
                 RetryPolicy = new Temporalio.Common.RetryPolicy { MaximumAttempts = 3 },
             };
 
-            //await Workflow.ExecuteActivityAsync((Activities activity) => activity.ExecutionStartedAsync(parameters.WorkflowId, DateTime.UtcNow), options);
-            var definitionResponse = await Workflow.ExecuteActivityAsync((Activities a) => a.GetDefinitionAsync(parameters.WorkflowId), options);
-            blocks = new Queue<int>(definitionResponse.Blocks);
-
-            while (blocks.TryDequeue(out var block))
-            {
-                var blockResponse = await Workflow.ExecuteActivityAsync((Activities a) => a.ExecuteBlockAsync(block), options);
-                if (definitionResponse.Pauses.Contains(block))
-                {
-                    await PauseAsync(parameters.WorkflowId, JsonSerializer.SerializeToElement(block));
-                    await WaitForResumeAsync(cancellation);
-                }
-            }
+            var block = 1;
+            await PauseAsync(parameters.WorkflowId, JsonSerializer.SerializeToElement(block));
+            await WaitForResumeAsync(cancellation);
 
             var result = JsonDocument.Parse("{}").RootElement;
-            //await Workflow.ExecuteActivityAsync((Activities activity) => activity.ExecutionEndedAsync(parameters.WorkflowId, DateTime.UtcNow, result, null), options);
             return result;
         }
 
@@ -115,12 +103,6 @@ namespace TemporalioSamples.Pausable
             try
             {
                 isPaused = true;
-                var options = new ActivityOptions
-                {
-                    StartToCloseTimeout = TimeSpan.FromSeconds(10),
-                    CancellationToken = Workflow.CancellationToken,
-                };
-                //await Workflow.ExecuteActivityAsync((Activities activity) => activity.ExecutionPausedAsync(workflowId, DateTime.UtcNow, payload), options);
                 await eventing.PublishAsync(new WorkflowPausedEvent(workflowId, payload), Workflow.CancellationToken);
             }
             finally
